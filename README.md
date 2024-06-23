@@ -108,6 +108,10 @@ _Solution: Either the resistance or growth stats of the parent crops are too hig
 
 _Solution: Possibly change location. Crops have minimum environmental stat requirements (nutrients, humidity, air quality) and going below this threshold will kill the crop and leave an empty crop stick behind that is susceptible to growing weeds and overtaking the farms._
 
+5) There is a PKIX path building error when downloading the files from GitHub
+
+_Solution: This is from having outdated java certificates. Try updating your java (21 is recommended), but be prepared to manually install the files by typing "edit <filename>.lua" and copy-pasting the code from GitHub._
+
 ## Recommended Crops
 
 For starters, I recommend statting-up and spreading the following crops because their outputs are useful and not completely overshadowed by bees. Note that every crop has a higher chance of being discovered with specific parent combinations, but it is often easier to discover a crop from crossbreeding at the same tier. For example, diareed apparently has the highest chance of being discovered when the parents are oilberry and bobsyeruncleranks, BUT I recommend just running autoTier with all Tier 12 crops (or autoSpread with keepMutations on in the config). Crops that require a particular block underneath do not need to be fully grown in order to spread. For a full list of crops and their requirements, visit https://gtnh.miraheze.org/wiki/IC2_Crops_List.
