@@ -110,7 +110,7 @@ _Solution: Possibly change location. Crops have minimum environmental stat requi
 
 5) There is a PKIX path building error when downloading the files from GitHub
 
-_Solution: This is from having outdated java certificates. Try updating your java (21 is recommended), but be prepared to manually install the files by typing "edit <filename>.lua" and copy-pasting the code from GitHub._
+_Solution: This is from having outdated java certificates. Try updating your java (21 is recommended), but be prepared to manually install the files by copy-pasting the code from GitHub. The "Other Helpful Commands" section below can help with that._
 
 ## Recommended Crops
 
@@ -136,6 +136,10 @@ For starters, I recommend statting-up and spreading the following crops because 
 To list all of the files installed on the robot, enter
 
     ls
+
+To edit (or create) a new file, enter
+
+    edit <filename>.lua
 
 To remove any one file installed on the robot, enter
 
