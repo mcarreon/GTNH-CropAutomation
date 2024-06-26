@@ -41,7 +41,7 @@ local function checkChild(slot, crop)
                 action.transplant(posUtil.workingSlotToPos(slot), posUtil.workingSlotToPos(emptySlot))
                 action.placeCropStick(2)
                 database.updateFarm(emptySlot, crop)
-            
+
             -- No parent is empty, put in storage
             elseif stat >= config.autoSpreadThreshold then
                 action.transplant(posUtil.workingSlotToPos(slot), posUtil.storageSlotToPos(database.nextStorageSlot()))

@@ -5,11 +5,11 @@ local computer = require('computer')
 local os = require('os')
 local gps = require('gps')
 local config = require('config')
-local signal = require('signal')
 local scanner = require('scanner')
 local posUtil = require('posUtil')
 local database = require('database')
 local inventory_controller = component.inventory_controller
+local redstone = component.redstone
 
 
 local function needCharge()
@@ -118,6 +118,13 @@ local function deweed()
 end
 
 
+local function pulseDown()
+    redstone.setOutput(sides.down, 15)
+    os.sleep(0.1)
+    redstone.setOutput(sides.down, 0)
+end
+
+
 local function transplant(src, dest)
     local selectedSlot = robot.select()
     gps.save()
@@ -130,7 +137,7 @@ local function transplant(src, dest)
     gps.go(src)
     robot.useDown(sides.down, true)
     gps.go(config.dislocatorPos)
-    signal.pulseDown()
+    pulseDown()
 
     -- TRANSFER CROP TO DESTINATION
     robot.useDown(sides.down, true)
@@ -148,7 +155,7 @@ local function transplant(src, dest)
 
     robot.useDown(sides.down, true)
     gps.go(config.dislocatorPos)
-    signal.pulseDown()
+    pulseDown()
 
     -- DESTROY ORIGINAL CROP
     inventory_controller.equip()
