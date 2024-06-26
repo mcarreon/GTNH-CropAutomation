@@ -3,11 +3,10 @@ local robot = require('robot')
 local sides = require('sides')
 local computer = require('computer')
 local os = require('os')
+local database = require('database')
 local gps = require('gps')
 local config = require('config')
 local scanner = require('scanner')
-local posUtil = require('posUtil')
-local database = require('database')
 local inventory_controller = component.inventory_controller
 local redstone = component.redstone
 
@@ -149,7 +148,7 @@ local function transplant(src, dest)
 
     elseif crop.isCrop == false then
         database.addToStorage(crop)
-        gps.go(posUtil.storageSlotToPos(database.nextStorageSlot()))
+        gps.go(gps.storageSlotToPos(database.nextStorageSlot()))
         placeCropStick()
     end
 
@@ -174,7 +173,7 @@ local function cleanUp()
     for slot=1, config.workingFarmArea, 1 do
 
         -- Scan
-        gps.go(posUtil.workingSlotToPos(slot))
+        gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
 
         -- Remove all children and empty parents
@@ -205,6 +204,7 @@ return {
     restockAll = restockAll,
     placeCropStick = placeCropStick,
     deweed = deweed,
+    pulseDown = pulseDown,
     transplant = transplant,
     cleanUp = cleanUp
 }

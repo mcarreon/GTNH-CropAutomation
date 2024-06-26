@@ -1,5 +1,4 @@
 local gps = require('gps')
-local posUtil = require('posUtil')
 local scanner = require('scanner')
 local config = require('config')
 local storage = {}
@@ -20,7 +19,7 @@ end
 
 local function scanFarm()
     for slot=1, config.workingFarmArea, 2 do
-        gps.go(posUtil.workingSlotToPos(slot))
+        gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
             farm[slot] = crop
     end

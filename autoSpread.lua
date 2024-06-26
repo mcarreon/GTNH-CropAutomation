@@ -1,8 +1,7 @@
+local action = require('action')
 local database = require('database')
 local gps = require('gps')
-local posUtil = require('posUtil')
 local scanner = require('scanner')
-local action = require('action')
 local config = require('config')
 local emptySlot
 local targetCrop
@@ -38,13 +37,13 @@ local function checkChild(slot, crop)
 
             -- Make sure no parent on the working farm is empty
             if stat >= config.autoStatThreshold and findEmpty() and crop.gr <= config.workingMaxGrowth and crop.re <= config.workingMaxResistance then
-                action.transplant(posUtil.workingSlotToPos(slot), posUtil.workingSlotToPos(emptySlot))
+                action.transplant(gps.workingSlotToPos(slot), gps.workingSlotToPos(emptySlot))
                 action.placeCropStick(2)
                 database.updateFarm(emptySlot, crop)
 
             -- No parent is empty, put in storage
             elseif stat >= config.autoSpreadThreshold then
-                action.transplant(posUtil.workingSlotToPos(slot), posUtil.storageSlotToPos(database.nextStorageSlot()))
+                action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
                 database.addToStorage(crop)
                 action.placeCropStick(2)
 
@@ -55,7 +54,7 @@ local function checkChild(slot, crop)
             end
 
         elseif config.keepMutations and (not database.existInStorage(crop)) then
-            action.transplant(posUtil.workingSlotToPos(slot), posUtil.storageSlotToPos(database.nextStorageSlot()))
+            action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
             action.placeCropStick(2)
             database.addToStorage(crop)
 
@@ -88,7 +87,7 @@ local function spreadOnce()
         end
 
         -- Scan
-        gps.go(posUtil.workingSlotToPos(slot))
+        gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
 
         if slot % 2 == 0 then

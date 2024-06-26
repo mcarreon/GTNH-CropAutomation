@@ -1,8 +1,7 @@
-local gps = require('gps')
 local action = require('action')
 local database = require('database')
+local gps = require('gps')
 local scanner = require('scanner')
-local posUtil = require('posUtil')
 local config = require('config')
 local breedRound = 0
 local lowestTier
@@ -75,14 +74,14 @@ local function checkChild(slot, crop)
             local stat = crop.gr + crop.ga - crop.re
 
             if crop.tier > lowestTier then
-                action.transplant(posUtil.workingSlotToPos(slot), posUtil.workingSlotToPos(lowestTierSlot))
+                action.transplant(gps.workingSlotToPos(slot), gps.workingSlotToPos(lowestTierSlot))
                 action.placeCropStick(2)
                 database.updateFarm(lowestTierSlot, crop)
                 updateLowest()
 
             -- Not higher tier, stat up working farm
             elseif (config.statWhileTiering and crop.tier == lowestTier and stat > lowestStat) then
-                action.transplant(posUtil.workingSlotToPos(slot), posUtil.workingSlotToPos(lowestStatSlot))
+                action.transplant(gps.workingSlotToPos(slot), gps.workingSlotToPos(lowestStatSlot))
                 action.placeCropStick(2)
                 database.updateFarm(lowestStatSlot, crop)
                 updateLowest()
@@ -94,7 +93,7 @@ local function checkChild(slot, crop)
 
         -- Not seen before, move to storage
         else
-            action.transplant(posUtil.workingSlotToPos(slot), posUtil.storageSlotToPos(database.nextStorageSlot()))
+            action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
             action.placeCropStick(2)
             database.addToStorage(crop)
         end
@@ -136,7 +135,7 @@ local function tierOnce()
         end
 
         -- Scan
-        gps.go(posUtil.workingSlotToPos(slot))
+        gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
 
         if slot % 2 == 0 then
