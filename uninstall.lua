@@ -1,16 +1,14 @@
 local shell = require('shell')
 local scripts = {
+    'setup.lua',
     'action.lua',
     'database.lua',
     'gps.lua',
-    'posUtil.lua',
     'scanner.lua',
-    'signal.lua',
+    'config.lua',
     'autoStat.lua',
     'autoTier.lua',
     'autoSpread.lua',
-    'config.lua',
-    'setup.lua',
     'uninstall.lua'
 }
 

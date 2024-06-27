@@ -1,10 +1,10 @@
 local config = {
     -- NOTE: EACH CONFIG SHOULD END WITH A COMMA
 
-    -- Side Length of Storage Farm
-    storageFarmSize = 9,
     -- Side Length of Working Farm
     workingFarmSize = 6,
+    -- Side Length of Storage Farm
+    storageFarmSize = 9,
 
     -- Once complete, remove all extra crop sticks to prevent the working farm from weeding
     cleanUp = true,
