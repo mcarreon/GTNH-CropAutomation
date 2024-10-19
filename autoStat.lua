@@ -3,8 +3,9 @@ local database = require('database')
 local gps = require('gps')
 local scanner = require('scanner')
 local config = require('config')
-local lowestStat
-local lowestStatSlot
+local events = require('events')
+local lowestStat = 0
+local lowestStatSlot = 0
 local targetCrop
 
 -- =================== MINOR FUNCTIONS ======================
@@ -43,7 +44,7 @@ local function updateLowest()
 end
 
 
-local function checkChild(slot, crop)
+local function checkChild(slot, crop, firstRun)
     if crop.isCrop and crop.name ~= 'emptyCrop' then
 
         if crop.name == 'air' then
@@ -52,6 +53,9 @@ local function checkChild(slot, crop)
         elseif scanner.isWeed(crop, 'working') then
             action.deweed()
             action.placeCropStick()
+
+        elseif firstRun then
+            return
 
         elseif crop.name == targetCrop then
             local stat = crop.gr + crop.ga - crop.re
@@ -80,19 +84,21 @@ local function checkChild(slot, crop)
 end
 
 
-local function checkParent(slot, crop)
+local function checkParent(slot, crop, firstRun)
     if crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' then
         if scanner.isWeed(crop, 'working') then
             action.deweed()
             database.updateFarm(slot, {isCrop=true, name='emptyCrop'})
-            updateLowest()
+            if not firstRun then
+                updateLowest()
+            end
         end
     end
 end
 
 -- ====================== THE LOOP ======================
 
-local function statOnce()
+local function statOnce(firstRun)
     for slot=1, config.workingFarmArea, 1 do
 
         -- Terminal Condition
@@ -106,15 +112,31 @@ local function statOnce()
             print('autoStat: Minimum Stat Threshold Reached!')
             return false
         end
+        
+        -- Terminal Condition
+        if events.needExit() then
+            print('autoStat: Need to exit!')
+            return false
+        end
+        
+        os.sleep(0)
 
         -- Scan
         gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
+        
+        if firstRun then
+            database.updateFarm(slot, crop)
+            if slot == 1 then
+                targetCrop = database.getFarm()[1].name
+                print(string.format('autoStat: Target %s', targetCrop))
+            end
+        end
 
         if slot % 2 == 0 then
-            checkChild(slot, crop)
+            checkChild(slot, crop, firstRun)
         else
-            checkParent(slot, crop)
+            checkParent(slot, crop, firstRun)
         end
 
         if action.needCharge() then
@@ -126,22 +148,22 @@ end
 
 -- ======================== MAIN ========================
 
-local function init()
-    database.resetStorage()
-    database.scanFarm()
+local function main()
+    print('autoStat enter')
+    action.initWork()
+
+    statOnce(true) 
     action.restockAll()
+
     updateLowest()
 
-    targetCrop = database.getFarm()[1].name
-    print(string.format('autoStat: Target %s', targetCrop))
-end
-
-
-local function main()
-    init()
-
     -- Loop
-    while statOnce() do
+    while statOnce(false) do
+        action.restockAll()
+    end
+    
+    -- If we terminated early, we need to go back to charger
+    if events.needExit() then
         action.restockAll()
     end
 
@@ -149,6 +171,8 @@ local function main()
     if config.cleanUp then
         action.cleanUp()
     end
+
+    events.unhookEvents()
 
     print('autoStat: Complete!')
 end

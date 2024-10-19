@@ -3,6 +3,7 @@ local scripts = {
     'setup.lua',
     'action.lua',
     'database.lua',
+    'events.lua',
     'gps.lua',
     'scanner.lua',
     'config.lua',

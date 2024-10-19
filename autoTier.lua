@@ -3,6 +3,7 @@ local database = require('database')
 local gps = require('gps')
 local scanner = require('scanner')
 local config = require('config')
+local events = require('events')
 local breedRound = 0
 local lowestTier
 local lowestTierSlot
@@ -59,7 +60,7 @@ local function updateLowest()
 end
 
 
-local function checkChild(slot, crop)
+local function checkChild(slot, crop, firstRun)
     if crop.isCrop and crop.name ~= 'emptyCrop' then
 
         if crop.name == 'air' then
@@ -68,6 +69,9 @@ local function checkChild(slot, crop)
         elseif scanner.isWeed(crop, 'working') then
             action.deweed()
             action.placeCropStick()
+            
+        elseif firstRun then
+            return
 
         -- Seen before, tier up working farm
         elseif database.existInStorage(crop) then
@@ -101,19 +105,21 @@ local function checkChild(slot, crop)
 end
 
 
-local function checkParent(slot, crop)
+local function checkParent(slot, crop, firstRun)
     if crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' then
         if scanner.isWeed(crop, 'working') then
             action.deweed()
             database.updateFarm(slot, {isCrop=true, name='emptyCrop'})
-            updateLowest()
+            if not firstRun then
+                updateLowest()
+            end
         end
     end
 end
 
 -- ====================== THE LOOP ======================
 
-local function tierOnce()
+local function tierOnce(firstRun)
     for slot=1, config.workingFarmArea, 1 do
 
         -- Terminal Condition
@@ -129,19 +135,33 @@ local function tierOnce()
         end
 
         -- Terminal Condition
-        if lowestTier >= config.autoTierThreshold then
-            print('autoTier: Minimum Tier Threshold Reached!')
+        if not firstRun then
+            if lowestTier >= config.autoTierThreshold then
+                print('autoTier: Minimum Tier Threshold Reached!')
+                return false
+            end
+        end
+        
+        -- Terminal Condition
+        if events.needExit() then
+            print('autoTier: Need to exit!')
             return false
         end
+        
+        os.sleep(0)
 
         -- Scan
         gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
 
+        if firstRun then
+            database.updateFarm(slot, crop)
+        end
+
         if slot % 2 == 0 then
-            checkChild(slot, crop)
+            checkChild(slot, crop, firstRun)
         else
-            checkParent(slot, crop)
+            checkParent(slot, crop, firstRun)
         end
 
         if action.needCharge() then
@@ -153,22 +173,23 @@ end
 
 -- ======================== MAIN ========================
 
-local function init()
-    database.resetStorage()
-    database.scanFarm()
-    action.restockAll()
-    updateLowest()
-
-    print(string.format('autoTier: Target Tier %s', config.autoTierThreshold))
-end
-
-
 local function main()
-    init()
+    action.initWork()
+
+    tierOnce(true)
+    action.restockAll()
+    
+    updateLowest()
+    print(string.format('autoTier: Target Tier %s', config.autoTierThreshold))
 
     -- Loop
-    while tierOnce() do
+    while tierOnce(false) do
         breedRound = breedRound + 1
+        action.restockAll()
+    end
+    
+    -- If we terminated early, we need to go back to charger
+    if events.needExit() then
         action.restockAll()
     end
 
@@ -176,6 +197,8 @@ local function main()
     if config.cleanUp then
         action.cleanUp()
     end
+    
+    events.unhookEvents()
 
     print('autoTier: Complete!')
 end
