@@ -112,19 +112,19 @@ local function statOnce(firstRun)
             print('autoStat: Minimum Stat Threshold Reached!')
             return false
         end
-        
+
         -- Terminal Condition
         if events.needExit() then
-            print('autoStat: Need to exit!')
+            print('autoStat: Received Exit Command!')
             return false
         end
-        
+
         os.sleep(0)
 
         -- Scan
         gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
-        
+
         if firstRun then
             database.updateFarm(slot, crop)
             if slot == 1 then
@@ -149,20 +149,20 @@ end
 -- ======================== MAIN ========================
 
 local function main()
-    print('autoStat enter')
     action.initWork()
+    print('autoStat: Scanning Farm')
 
-    statOnce(true) 
+    -- First Run
+    statOnce(true)
     action.restockAll()
-
     updateLowest()
 
     -- Loop
     while statOnce(false) do
         action.restockAll()
     end
-    
-    -- If we terminated early, we need to go back to charger
+
+    -- Terminated Early
     if events.needExit() then
         action.restockAll()
     end
@@ -173,7 +173,6 @@ local function main()
     end
 
     events.unhookEvents()
-
     print('autoStat: Complete!')
 end
 

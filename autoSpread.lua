@@ -86,10 +86,10 @@ local function spreadOnce(firstRun)
             print('autoSpread: Storage Full!')
             return false
         end
-        
+
         -- Terminal Condition
         if events.needExit() then
-            print('autoSpread: Need to exit!')
+            print('autoSpread: Received Exit Command!')
             return false
         end
 
@@ -98,12 +98,12 @@ local function spreadOnce(firstRun)
         -- Scan
         gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
-        
+
         if firstRun then
             database.updateFarm(slot, crop)
             if slot == 1 then
                 targetCrop = database.getFarm()[1].name
-                print(string.format('autoSpread: Target %s', targetCrop))    
+                print(string.format('autoSpread: Target %s', targetCrop))
             end
         end
 
@@ -124,17 +124,18 @@ end
 
 local function main()
     action.initWork()
-    
-    -- First special run with Scan
+    print('autoSpread: Scanning Farm')
+
+    -- First Run
     spreadOnce(true)
-    action.restockAll() 
+    action.restockAll()
 
     -- Loop
     while spreadOnce(false) do
         action.restockAll()
     end
-    
-    -- If we terminated early, we need to go back to charger
+
+    -- Terminated Early
     if events.needExit() then
         action.restockAll()
     end
@@ -143,9 +144,8 @@ local function main()
     if config.cleanUp then
         action.cleanUp()
     end
-    
-    events.unhookEvents()
 
+    events.unhookEvents()
     print('autoSpread: Complete!')
 end
 

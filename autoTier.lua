@@ -69,7 +69,7 @@ local function checkChild(slot, crop, firstRun)
         elseif scanner.isWeed(crop, 'working') then
             action.deweed()
             action.placeCropStick()
-            
+
         elseif firstRun then
             return
 
@@ -141,13 +141,13 @@ local function tierOnce(firstRun)
                 return false
             end
         end
-        
+
         -- Terminal Condition
         if events.needExit() then
-            print('autoTier: Need to exit!')
+            print('autoTier: Received Exit Command!')
             return false
         end
-        
+
         os.sleep(0)
 
         -- Scan
@@ -175,20 +175,21 @@ end
 
 local function main()
     action.initWork()
+    print('autoTier: Scanning Farm')
+    print(string.format('autoTier: Target Tier %s', config.autoTierThreshold))
 
+    -- First Run
     tierOnce(true)
     action.restockAll()
-    
     updateLowest()
-    print(string.format('autoTier: Target Tier %s', config.autoTierThreshold))
 
     -- Loop
     while tierOnce(false) do
         breedRound = breedRound + 1
         action.restockAll()
     end
-    
-    -- If we terminated early, we need to go back to charger
+
+    -- Terminated Early
     if events.needExit() then
         action.restockAll()
     end
@@ -197,9 +198,8 @@ local function main()
     if config.cleanUp then
         action.cleanUp()
     end
-    
-    events.unhookEvents()
 
+    events.unhookEvents()
     print('autoTier: Complete!')
 end
 
