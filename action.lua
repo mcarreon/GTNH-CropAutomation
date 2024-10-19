@@ -7,8 +7,12 @@ local database = require('database')
 local gps = require('gps')
 local config = require('config')
 local scanner = require('scanner')
+local events = require('events')
 local inventory_controller = component.inventory_controller
 local redstone = component.redstone
+
+
+local restockAll, cleanUp  -- forward declaration
 
 
 local function needCharge()
@@ -31,21 +35,13 @@ local function fullInventory()
 end
 
 
-local function charge()
-    gps.go(config.chargerPos)
-    gps.turnTo(1)
-    repeat
-        os.sleep(0.5)
-    until fullyCharged()
-end
-
-
 local function restockStick()
     local selectedSlot = robot.select()
 
     gps.go(config.stickContainerPos)
     robot.select(robot.inventorySize()+config.stickSlot)
     for i=1, inventory_controller.getInventorySize(sides.down) do
+        os.sleep(0)
         inventory_controller.suckFromSlot(sides.down, i, 64-robot.count())
         if robot.count() == 64 then
             break
@@ -61,6 +57,7 @@ local function dumpInventory()
 
     gps.go(config.storagePos)
     for i=1, (robot.inventorySize() + config.storageStopSlot) do
+        os.sleep(0)
         if robot.count(i) > 0 then
             robot.select(i)
             for e=1, inventory_controller.getInventorySize(sides.down) do
@@ -76,20 +73,15 @@ local function dumpInventory()
 end
 
 
-local function restockAll()
-    dumpInventory()
-    restockStick()
-    charge()
-end
-
-
 local function placeCropStick(count)
     if count == nil then
         count = 1
     end
     local selectedSlot = robot.select()
     if robot.count(robot.inventorySize()+config.stickSlot) < count + 1 then
+        gps.save()
         restockStick()
+        gps.resume()
     end
     robot.select(robot.inventorySize()+config.stickSlot)
     inventory_controller.equip()
@@ -104,7 +96,9 @@ end
 local function deweed()
     local selectedSlot = robot.select()
     if config.keepDrops and fullInventory() then
+        gps.save()
         dumpInventory()
+        gps.resume()
     end
     robot.select(robot.inventorySize()+config.spadeSlot)
     inventory_controller.equip()
@@ -131,8 +125,6 @@ local function transplant(src, dest)
     inventory_controller.equip()
 
     -- TRANSFER TO RELAY LOCATION
-    gps.go(config.dislocatorPos)
-    robot.useDown(sides.down)
     gps.go(src)
     robot.useDown(sides.down, true)
     gps.go(config.dislocatorPos)
@@ -155,6 +147,9 @@ local function transplant(src, dest)
     robot.useDown(sides.down, true)
     gps.go(config.dislocatorPos)
     pulseDown()
+    
+    -- Reprime binder
+    robot.useDown(sides.down, true)
 
     -- DESTROY ORIGINAL CROP
     inventory_controller.equip()
@@ -169,9 +164,8 @@ local function transplant(src, dest)
 end
 
 
-local function cleanUp()
+function cleanUp()
     for slot=1, config.workingFarmArea, 1 do
-
         -- Scan
         gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
@@ -192,6 +186,61 @@ local function cleanUp()
             robot.suckDown()
         end
     end
+    events.setNeedCleanup(false)
+    restockAll()
+end
+
+
+local function primeBinder()
+    local selectedSlot = robot.select()
+    
+    robot.select(robot.inventorySize()+config.binderSlot)
+    inventory_controller.equip()
+    
+    -- Use binder at start to reset it, if it already primed
+    robot.useDown(sides.down, true)
+    
+    gps.go(config.dislocatorPos)
+    robot.useDown(sides.down)
+    
+    inventory_controller.equip()
+    
+    robot.select(selectedSlot)
+end
+
+
+local function charge()
+    gps.go(config.chargerPos)
+    gps.turnTo(1)
+    repeat
+        os.sleep(0.5)
+        if events.needExit() then
+            if events.needCleanup() and config.cleanUp then
+                events.setNeedCleanup(false)
+                cleanUp()
+            end
+            os.exit()  -- only exiting here, so that robot will be in starting position
+        end
+    until fullyCharged()
+end
+
+
+function restockAll()
+    dumpInventory()
+    restockStick()
+    charge()
+end
+
+
+local function initWork()
+    events.initEvents()
+    events.hookEvents()
+    print('Work started, waiting for full charge')
+    charge()
+    print('Fully charged')
+    database.resetStorage()
+    primeBinder()
+    print('Scanning farm')
     restockAll()
 end
 
@@ -206,5 +255,6 @@ return {
     deweed = deweed,
     pulseDown = pulseDown,
     transplant = transplant,
-    cleanUp = cleanUp
+    cleanUp = cleanUp,
+    initWork = initWork
 }
