@@ -1,6 +1,7 @@
 local gps = require('gps')
 local scanner = require('scanner')
 local config = require('config')
+local events = require('events')
 local storage = {}
 local reverseStorage = {}
 local farm = {}
@@ -14,15 +15,6 @@ end
 
 local function updateFarm(slot, crop)
     farm[slot] = crop
-end
-
-
-local function scanFarm()
-    for slot=1, config.workingFarmArea, 2 do
-        gps.go(gps.workingSlotToPos(slot))
-        local crop = scanner.scan()
-            farm[slot] = crop
-    end
 end
 
 -- ======================== STORAGE FARM ========================
@@ -60,7 +52,6 @@ end
 return {
     getFarm = getFarm,
     updateFarm = updateFarm,
-    scanFarm = scanFarm,
     getStorage = getStorage,
     resetStorage = resetStorage,
     addToStorage = addToStorage,

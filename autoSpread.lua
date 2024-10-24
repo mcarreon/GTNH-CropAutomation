@@ -3,6 +3,7 @@ local database = require('database')
 local gps = require('gps')
 local scanner = require('scanner')
 local config = require('config')
+local events = require('events')
 local emptySlot
 local targetCrop
 
@@ -77,7 +78,7 @@ end
 
 -- ====================== THE LOOP ======================
 
-local function spreadOnce()
+local function spreadOnce(firstRun)
     for slot=1, config.workingFarmArea, 1 do
 
         -- Terminal Condition
@@ -86,9 +87,25 @@ local function spreadOnce()
             return false
         end
 
+        -- Terminal Condition
+        if events.needExit() then
+            print('autoSpread: Received Exit Command!')
+            return false
+        end
+
+        os.sleep(0)
+
         -- Scan
         gps.go(gps.workingSlotToPos(slot))
         local crop = scanner.scan()
+
+        if firstRun then
+            database.updateFarm(slot, crop)
+            if slot == 1 then
+                targetCrop = database.getFarm()[1].name
+                print(string.format('autoSpread: Target %s', targetCrop))
+            end
+        end
 
         if slot % 2 == 0 then
             checkChild(slot, crop)
@@ -105,21 +122,21 @@ end
 
 -- ======================== MAIN ========================
 
-local function init()
-    database.resetStorage()
-    database.scanFarm()
+local function main()
+    action.initWork()
+    print('autoSpread: Scanning Farm')
+
+    -- First Run
+    spreadOnce(true)
     action.restockAll()
 
-    targetCrop = database.getFarm()[1].name
-    print(string.format('autoSpread: Target %s', targetCrop))
-end
-
-
-local function main()
-    init()
-
     -- Loop
-    while spreadOnce() do
+    while spreadOnce(false) do
+        action.restockAll()
+    end
+
+    -- Terminated Early
+    if events.needExit() then
         action.restockAll()
     end
 
@@ -128,6 +145,7 @@ local function main()
         action.cleanUp()
     end
 
+    events.unhookEvents()
     print('autoSpread: Complete!')
 end
 

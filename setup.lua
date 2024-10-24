@@ -5,6 +5,7 @@ local repo
 local scripts = {
     'action.lua',
     'database.lua',
+    'events.lua',
     'gps.lua',
     'scanner.lua',
     'config.lua',
