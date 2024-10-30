@@ -1,4 +1,6 @@
 local event = require('event')
+local component = require('component')
+local self = component.computer
 local needExitFlag = false
 local needCleanupFlag = false
 
@@ -7,12 +9,16 @@ local function keyboardEvent(eventName, keyboardAddress, charNum, codeNum, playe
     -- Exit if 'q' was pressed
     if charNum == 113 then
         needExitFlag = true
+        print('===== !!! ===== !!! ===== !!! =====')
+        self.beep(1000, 1)
         return false -- Unregister this event listener
 
     -- Exit and cleanup if 'c' was pressed
     elseif charNum == 99 then
         needExitFlag = true
         needCleanupFlag = true
+        print('===== !!! ===== !!! ===== !!! =====')
+        self.beep(1000, 1)
         return false -- Unregister this event listener
     end
 end
