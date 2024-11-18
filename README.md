@@ -9,8 +9,8 @@ Obtaining these components will require access to EV circuits and epoxid (mid-la
 - OC Electronics Assembler
 - OC Charger
 - Tier 2 Computer Case
-- Tier 2 Accelerated Processing Unit
 - Tier 2 Memory
+- Tier 1 Accelerated Processing Unit*
 - Tier 1 Redstone Card
 - Tier 1 Hard Disk Drive
 - Tier 1 Screen
@@ -26,6 +26,8 @@ Obtaining these components will require access to EV circuits and epoxid (mid-la
 ![Robot Components](media/Robot_Components.png?)
 
 Lastly, you need a Transvector Binder and Transvector Dislocator which requires some progression in Thaumcraft. Neither are very difficult to craft even if you have yet to start Thaumcraft. In the thaumonomicon, Transvector Dislocator can be found under "Thaumic Tinkerer" which requires both Transvector Interface and Smokey Quartz on the same tab. You will also need to complete research on Mirror Magic under "Artifice." For more information regarding Thaumcraft research, visit https://gtnh.miraheze.org/wiki/Thaumcraft_Research_Cheatsheet.
+
+*  In GTNH 2.7.0, the APU (yellow) was renamed from Tier 2 to Tier 1. Follow the image if you are unsure.
 
 # Building the Robot
 
@@ -111,6 +113,10 @@ _Solution: Possibly change location. Crops have minimum environmental stat requi
 5) There is a PKIX path building error when downloading the files from GitHub
 
 _Solution: This is from having outdated java certificates. Try updating your java (21 is recommended), but be prepared to manually install the files by copy-pasting the code from GitHub. The "Other Helpful Commands" section below can help with that._
+
+6) There is an "execute_complex" error when downloading the files from GitHub or trying to run autoStat && autoSpread
+
+_Solution: The execute complex refers to using the && operator. Double check that you installed at least Tier 2 memory. Anything less will prevent you from joining commands together._
 
 ## Recommended Crops
 
