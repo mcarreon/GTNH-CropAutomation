@@ -27,7 +27,7 @@ local config = {
     -- Maximum Resistance for crops on the working farm
     workingMaxResistance = 2,
     -- Maximum Growth for crops on the storage farm
-    storageMaxGrowth = 23,
+    storageMaxGrowth = 22,
     -- Maximum Resistance for crops on the storage farm
     storageMaxResistance = 2,
 
