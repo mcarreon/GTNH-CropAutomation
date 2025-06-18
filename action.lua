@@ -70,6 +70,25 @@ local function dumpInventory()
     robot.select(selectedSlot)
 end
 
+local function dumpInventoryToStorage()
+    local selectedSlot = robot.select()
+    gps.go(config.storageChestPos)
+
+    for i=1, (robot.inventorySize() + config.storageStopSlot) do
+        os.sleep(0)
+        if robot.count(i) > 0 then
+            robot.select(i)
+            for e=1, inventory_controller.getInventorySize(sides.down) do
+                if inventory_controller.getStackInSlot(sides.down, e) == nil then
+                    inventory_controller.dropIntoSlot(sides.down, e)
+                    break
+                end
+            end
+        end
+    end
+
+    robot.select(selectedSlot)
+end 
 
 local function placeCropStick(count)
     local selectedSlot = robot.select()
@@ -102,6 +121,27 @@ local function deweed()
     if config.keepDrops and fullInventory() then
         gps.save()
         dumpInventory()
+        gps.resume()
+    end
+
+    robot.select(robot.inventorySize() + config.spadeSlot)
+    inventory_controller.equip()
+    robot.useDown()
+
+    if config.keepDrops then
+        robot.suckDown()
+    end
+
+    inventory_controller.equip()
+    robot.select(selectedSlot)
+end
+
+local function clearBlock() 
+    local selectedSlot = robot.select()
+
+    if config.keepDrops and fullInventory() then
+        gps.save()
+        dumpInventoryToStorage()
         gps.resume()
     end
 
@@ -236,6 +276,11 @@ function restockAll()
     charge()
 end
 
+function dumpToStorageAndCharge()
+    dumpInventoryToStorage()
+    charge()
+end
+
 
 local function initWork()
     events.initEvents()
@@ -245,7 +290,6 @@ local function initWork()
     primeBinder()
     restockAll()
 end
-
 
 return {
     needCharge = needCharge,
@@ -258,5 +302,8 @@ return {
     pulseDown = pulseDown,
     transplant = transplant,
     cleanUp = cleanUp,
-    initWork = initWork
+    initWork = initWork,
+    dumpToStorageAndCharge = dumpToStorageAndCharge,
+    dumpInventoryToStorage = dumpInventoryToStorage,
+    clearBlock = clearBlock
 }

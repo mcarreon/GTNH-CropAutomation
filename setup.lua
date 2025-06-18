@@ -15,6 +15,8 @@ local scripts = {
     'autoMaintain.lua',
     'autoMaintainBreed.lua',
     'autoMaintainBreedWithStorage.lua',
+    'utilities.lua',
+    'cleanStorage.lua',
     'uninstall.lua'
 }
 

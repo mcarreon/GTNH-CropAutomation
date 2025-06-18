@@ -34,6 +34,9 @@ local function addToStorage(crop)
     reverseStorage[crop.name] = #storage
 end
 
+local function slotHasCrop(slot)
+    return storage[slot].isCrop == true and storage[slot].name ~= 'emptyCrop'
+end
 
 local function existInStorage(crop)
     if reverseStorage[crop.name] then

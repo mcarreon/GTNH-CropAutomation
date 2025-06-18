@@ -10,6 +10,9 @@ local scripts = {
     'autoStat.lua',
     'autoTier.lua',
     'autoSpread.lua',
+    'autoMaintain.lua',
+    'autoMaintainBreed.lua',
+    'autoMaintainBreedWithStorage.lua',
     'uninstall.lua'
 }
 

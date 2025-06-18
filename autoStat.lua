@@ -4,9 +4,10 @@ local gps = require('gps')
 local scanner = require('scanner')
 local config = require('config')
 local events = require('events')
+local util = require('utilities')
 local lowestStat = 0
 local lowestStatSlot = 0
-local targetCrop
+local targetCrop 
 
 -- =================== MINOR FUNCTIONS ======================
 
@@ -75,7 +76,7 @@ local function checkChild(slot, crop, firstRun)
             action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
             action.placeCropStick(2)
             database.addToStorage(crop)
-
+            
         else
             action.deweed()
             action.placeCropStick()
@@ -147,8 +148,18 @@ local function statOnce(firstRun)
 end
 
 -- ======================== MAIN ========================
-
 local function main()
+    if arg[0] == true then 
+        config.keepMutations = true
+        print('autoStat: Mutations will be saved')
+
+        defer(function()
+            config.keepMutations = false
+            print('autoStat: Resetting keepMutations value to false')
+        end
+        )
+    end
+
     action.initWork()
     print('autoStat: Scanning Farm')
 
