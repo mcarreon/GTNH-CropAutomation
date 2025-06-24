@@ -53,11 +53,10 @@ end
 -- ======================== MAIN ========================
 
 local function init()
+    print('autoMaintaining')
     database.resetStorage()
     database.scanFarm()
     action.restockAll()
-
-    print('autoMaintaining')
 end
 
 

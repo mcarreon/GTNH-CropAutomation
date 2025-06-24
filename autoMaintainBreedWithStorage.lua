@@ -79,6 +79,7 @@ end
 
 local function init()
     database.resetStorage()
+    database.resetFarm()
     database.scanFarm()
     action.restockAll()
 

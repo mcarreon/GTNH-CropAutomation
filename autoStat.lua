@@ -149,17 +149,6 @@ end
 
 -- ======================== MAIN ========================
 local function main()
-    if arg[0] == true then 
-        config.keepMutations = true
-        print('autoStat: Mutations will be saved')
-
-        defer(function()
-            config.keepMutations = false
-            print('autoStat: Resetting keepMutations value to false')
-        end
-        )
-    end
-
     action.initWork()
     print('autoStat: Scanning Farm')
 

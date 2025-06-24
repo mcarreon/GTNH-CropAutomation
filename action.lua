@@ -17,6 +17,10 @@ local function needCharge()
     return computer.energy() / computer.maxEnergy() < config.needChargeLevel
 end
 
+local function halfCharge()
+    return computer.energy() / computer.maxEnergy() < 0.5
+end
+
 
 local function fullyCharged()
     return computer.energy() / computer.maxEnergy() > 0.99
@@ -147,7 +151,8 @@ local function clearBlock()
 
     robot.select(robot.inventorySize() + config.spadeSlot)
     inventory_controller.equip()
-    robot.useDown()
+    robot.swingDown()
+    robot.swingDown()
 
     if config.keepDrops then
         robot.suckDown()
@@ -276,7 +281,7 @@ function restockAll()
     charge()
 end
 
-function dumpToStorageAndCharge()
+local function dumpToStorageAndCharge()
     dumpInventoryToStorage()
     charge()
 end
@@ -305,5 +310,7 @@ return {
     initWork = initWork,
     dumpToStorageAndCharge = dumpToStorageAndCharge,
     dumpInventoryToStorage = dumpInventoryToStorage,
-    clearBlock = clearBlock
+    clearBlock = clearBlock,
+    fullInventory = fullInventory,
+    halfCharge = halfCharge,
 }

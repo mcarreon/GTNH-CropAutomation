@@ -6,59 +6,78 @@ local config = require('config')
 local events = require('events')
 local emptySlot
 local targetCrop
-local storageEmpty = true
-
--- =================== MINOR FUNCTIONS ======================
-
-local function scanStorage() 
-    storageEmpty = true
-    
-    for slot=1, config.storageFarmArea, 1 do
-        gps.go(gps.storageSlotToPos(slot))
-        local crop = scanner.scan()
-        if crop.isCrop and crop.name != 'emptyCrop' then
-            database.addToStorage(crop)
-            storageEmpty = false
-        end
-    end
-end
 
 -- ====================== THE LOOP ======================
 local function cleanStorage() 
     for slot=1, config.storageFarmArea, 1 do
         gps.go(gps.storageSlotToPos(slot))
+        
         if database.slotHasCrop(slot) then
             -- Pickup cropstick and crop and dump to storage chest 
             action.clearBlock() 
         end
 
-        if action.needCharge() then
+        if action.halfCharge() then
             action.charge()
         end
+
+        if action.fullInventory() then 
+            action.dumpToStorageAndCharge()
+        end
     end
+
+    database.resetStorage()
 end 
+
+local function cleanFarm()
+    for slot=1, config.workingFarmArea, 1 do
+        gps.go(gps.workingSlotToPos(slot))
+    
+        if database.farmHasCrop(slot) then
+            -- Pickup cropstick and crop and dump to storage chest 
+            action.clearBlock() 
+        end
+    
+        if action.halfCharge() then
+            action.charge()
+        end
+
+        if action.fullInventory() then 
+            action.dumpToStorageAndCharge()
+        end
+    end
+end
+
+
 
 -- ======================== MAIN ========================
 
 local function main()
     action.initWork()
+    database.resetStorage()
+    database.resetFarm()
     print('cleanStorage: Scanning Storage')
 
     -- Scan the storage
-    scanStorage()
+    database.scanStorage()
+    action.dumpToStorageAndCharge()
+    
+    -- Clean the storage
+    cleanStorage()
     action.dumpToStorageAndCharge()
 
-    -- Loop
-    while storageEmpty ~= true do
-        cleanStorage()
-        -- Scan storage again to see if work is done
-        scanStorage()
-        action.charge()
-    end
+    -- Scan the farm
+    database.scanFarm()
+    action.dumpToStorageAndCharge()
+
+    -- Clean the farm
+    cleanFarm()
+    action.dumpToStorageAndCharge()
 
     -- Terminated Early
     if events.needExit() then
         action.dumpToStorageAndCharge()
+        action.restockAll()
     end
 
     -- Finish

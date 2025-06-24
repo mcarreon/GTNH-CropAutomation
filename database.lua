@@ -17,6 +17,14 @@ local function updateFarm(slot, crop)
     farm[slot] = crop
 end
 
+local function farmHasCrop(slot)
+    return farm[slot].isCrop == true and farm[slot].name ~= 'emptyCrop'
+end
+
+local function resetFarm()
+    farm = {}
+end
+
 -- ======================== STORAGE FARM ========================
 
 local function getStorage()
@@ -46,6 +54,22 @@ local function existInStorage(crop)
     end
 end
 
+local function scanFarm()
+    for slot=1, config.workingFarmArea, 1 do
+        gps.go(gps.workingSlotToPos(slot))
+        local crop = scanner.scan()
+        updateFarm(slot, crop)
+    end
+end
+
+local function scanStorage()
+    for slot=1, config.storageFarmArea, 1 do
+        gps.go(gps.storageSlotToPos(slot))
+        local crop = scanner.scan()
+        addToStorage(crop)
+    end
+end
+
 
 local function nextStorageSlot()
     return #storage + 1
@@ -59,5 +83,10 @@ return {
     resetStorage = resetStorage,
     addToStorage = addToStorage,
     existInStorage = existInStorage,
-    nextStorageSlot = nextStorageSlot
+    nextStorageSlot = nextStorageSlot,
+    slotHasCrop = slotHasCrop,
+    scanFarm = scanFarm,
+    scanStorage = scanStorage,
+    farmHasCrop = farmHasCrop,
+    resetFarm = resetFarm
 }
